@@ -1,0 +1,33 @@
+---
+
+- hosts: web-server
+  gather_facts: false
+
+  tasks:
+
+    - name: Create EC2 instance
+      ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: us-east-2
+        image: ami-710e2414
+        instance_type: t2.micro
+        group_id: sg-31d9185a
+        key_name: "{{ aws_key_name }}"
+        volumes:
+          - Name: "{{ inventory_hostname }}"
+            device_name: /dev/xvda
+            volume_type: gp2
+            volume_size: 8
+            delete_on_termination: true
+        vpc_subnet_id: subnet-77e3fc3d
+        assign_public_ip: yes
+        instance_tags:
+          Name: "{{ inventory_hostname }}"
+          Env: "{{ config_environment }}"
+          Start: auto
+          Stop: auto
+        wait: yes
+      register: ec2
+      when: hostvars[inventory_hostname]['ansible_ssh_host'] is undefined
+      delegate_to: localhost

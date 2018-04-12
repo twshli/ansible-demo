@@ -1,0 +1,27 @@
+---
+
+- hosts: web-server
+  gather_facts: false
+
+  tasks:
+
+    - name: Retrieve & Stop EC2 instance
+      ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: us-east-2
+        instance_tags:
+          Name: "{{ inventory_hostname }}"
+        state: stopped
+        wait: yes
+      register: ec2
+      delegate_to: localhost
+
+    - name: Terminate EC2 instances
+      ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: us-east-2
+        instance_ids: '{{ ec2.instance_ids }}'
+        state: absent
+      delegate_to: localhost

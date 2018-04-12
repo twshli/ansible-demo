@@ -1,0 +1,32 @@
+---
+
+- hosts: web-server
+  gather_facts: false
+
+  roles:
+    - { role: "roles/install_toolkit", toolkit: "java-1.8.0-openjdk-devel" }
+    - { role: "roles/install_toolkit", toolkit: "git" }
+
+  tasks:
+    - name: Download project into apps
+      git:
+        repo: https://github.com/twshli/spring-boot-demo
+        dest: ~/apps/spring-boot-demo
+
+    - name: Build project
+      command: ./gradlew clean build
+      args:
+        chdir: ~/apps/spring-boot-demo
+
+    - name: Copy jar file to /apps
+      command: cp spring-boot-demo/build/libs/spring-boot-demo.jar spring-boot-demo.jar
+      args:
+        chdir: ~/apps
+
+    - name: Copy start script to server
+      copy:
+        src: ../script/run_app.sh
+        dest: ~/apps/run_app.sh
+
+    - name: Start app
+      command: ~/apps/run_app.sh
